@@ -214,6 +214,12 @@ module.exports = withPlausibleProxy({ src: 'https://plausible.io/js/pa-EScEhWlTi
   async redirects () {
     return [
       {
+        source: '/search',
+        has: [{ type: 'query', key: 'what', value: 'stackers' }],
+        destination: '/stackers/search',
+        permanent: false
+      },
+      {
         source: '/statistics',
         destination: '/satistics',
         permanent: true

@@ -220,11 +220,15 @@ export function getGetServerSideProps (
         console.error(e)
       }
 
-      if (error || !data || (notFound && notFound(data, vars, me))) {
+      if (!data || (notFound && notFound(data, vars, me))) {
         error && console.error(error)
         res.writeHead(302, {
           Location: '/404'
         }).end()
+        return { props: {} }
+      }
+      if (error) {
+        console.error(error)
       }
 
       props = {
