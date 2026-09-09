@@ -1,4 +1,5 @@
-import Nostr, { DEFAULT_CROSSPOSTING_RELAYS } from '@/lib/nostr'
+import Nostr from '@/lib/nostr'
+import { relaysForNip57Receipt } from '@/lib/nip57-relays'
 import { createHash } from 'crypto'
 import { parsePaymentRequest } from 'ln-service'
 
@@ -58,8 +59,7 @@ export async function nip57 ({ data: { hash }, boss, lnd, models }) {
     const addressTag = note.tags.filter(t => t?.length >= 2 && t[0] === 'a')[0]
     const senderTag = typeof note.pubkey === 'string' ? ['P', note.pubkey] : null
     const kindTag = note.tags.filter(t => t?.length >= 2 && t[0] === 'k')[0]
-    const relaysTag = note.tags.find(t => t?.length >= 2 && t[0] === 'relays')
-    const relays = (relaysTag ? relaysTag.slice(1) : DEFAULT_CROSSPOSTING_RELAYS).filter(Boolean)
+    const relays = relaysForNip57Receipt(note)
 
     const tags = [recipientTag]
     if (eventTag) tags.push(eventTag)
