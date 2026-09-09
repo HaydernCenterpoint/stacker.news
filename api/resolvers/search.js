@@ -3,6 +3,7 @@ import { whenToFrom } from '@/lib/time'
 import { getItem, itemQueryWithMeta, SELECT } from './item'
 import { parse } from 'tldts'
 import { searchSchema, validateSchema } from '@/lib/validate'
+import { itemSearchShortCircuit } from '@/lib/search-what'
 import { DEFAULT_POSTS_SATS_FILTER, DEFAULT_COMMENTS_SATS_FILTER, HOMEPAGE_POSTS_SATS_FILTER } from '@/lib/constants'
 import { resolveOpensearchModelId } from '../search/model-id'
 import removeMd from 'remove-markdown'
@@ -845,7 +846,7 @@ export default {
       await validateSchema(searchSchema, { q })
       const decodedCursor = decodeCursor(cursor)
 
-      if (!q || (what === 'bookmarks' && !me)) {
+      if (!q || (what === 'bookmarks' && !me) || itemSearchShortCircuit(what)) {
         return { items: [], cursor: null }
       }
 
