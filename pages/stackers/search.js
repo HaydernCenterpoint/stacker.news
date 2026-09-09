@@ -5,11 +5,17 @@ import UserList from '@/components/user-list'
 import { useRouter } from 'next/router'
 
 const staticVariables = { limit: 21, similarity: 0.2 }
-export const getServerSideProps = getGetServerSideProps({ query: USER_SEARCH, variables: staticVariables })
+export const getServerSideProps = getGetServerSideProps({
+  query: USER_SEARCH,
+  variables: params => ({
+    ...staticVariables,
+    q: typeof params.q === 'string' ? params.q : ''
+  })
+})
 
 export default function Index ({ ssrData }) {
   const router = useRouter()
-  const variables = { ...staticVariables, ...router.query }
+  const variables = { ...staticVariables, q: '', ...router.query }
 
   return (
     <SearchLayout>

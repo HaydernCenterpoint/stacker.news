@@ -12,6 +12,7 @@ import { GqlAuthenticationError, GqlAuthorizationError, GqlInputError } from '@/
 import { processCrop } from '@/lib/imgproxy'
 import { payInTypesSql } from '../payIn/lib/sql'
 import { Prisma } from '@prisma/client'
+import { firstAggValue } from '@/lib/first-agg'
 
 const contributors = new Set()
 
@@ -619,6 +620,7 @@ export default {
       return false
     },
     searchUsers: async (parent, { q, limit, similarity }, { models }) => {
+      if (!q) return []
       return await models.$queryRaw`
         SELECT *
         FROM search_users_by_name(${q}::text, ${clampNameSimilarity(similarity)}::real, ${Number(limit)}::integer)`
@@ -1045,7 +1047,7 @@ export default {
 
       const [fromDate, toDate] = whenRange(when, from, to)
       const granularity = timeUnitForRange([fromDate, toDate]).toUpperCase()
-      const [{ stacked }] = await models.$queryRaw`
+      const stackedRows = await models.$queryRaw`
         SELECT sum("AggPayOut"."sumMtokens") as stacked
         FROM "AggPayOut"
         WHERE "AggPayOut"."userId" = ${user.id}
@@ -1056,6 +1058,7 @@ export default {
         AND "AggPayOut"."payInType" NOT IN ('WITHDRAWAL', 'AUTO_WITHDRAWAL', 'PROXY_PAYMENT', 'BUY_CREDITS')
         GROUP BY "AggPayOut"."userId"
       `
+      const stacked = firstAggValue(stackedRows, 'stacked')
       return (stacked && msatsToSats(stacked)) || 0
     },
     spent: async (user, { when, from, to }, { models, me }) => {
@@ -1069,7 +1072,7 @@ export default {
 
       const [fromDate, toDate] = whenRange(when, from, to)
       const granularity = timeUnitForRange([fromDate, toDate]).toUpperCase()
-      const [{ spent }] = await models.$queryRaw`
+      const spentRows = await models.$queryRaw`
         SELECT sum("AggPayIn"."sumMcost") as spent
         FROM "AggPayIn"
         WHERE "AggPayIn"."userId" = ${user.id}
@@ -1080,7 +1083,7 @@ export default {
         AND "AggPayIn"."payInType" NOT IN ('WITHDRAWAL', 'AUTO_WITHDRAWAL', 'PROXY_PAYMENT', 'BUY_CREDITS')
         GROUP BY "AggPayIn"."userId"
       `
-
+      const spent = firstAggValue(spentRows, 'spent')
       return (spent && msatsToSats(spent)) || 0
     },
     referrals: async (user, { when, from, to }, { models, me }) => {
