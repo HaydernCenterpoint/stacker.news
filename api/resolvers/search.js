@@ -3,6 +3,7 @@ import { whenToFrom } from '@/lib/time'
 import { getItem, itemQueryWithMeta, SELECT } from './item'
 import { parse } from 'tldts'
 import { searchSchema, validateSchema } from '@/lib/validate'
+import { nymClauses } from '@/lib/search-nym'
 import { DEFAULT_POSTS_SATS_FILTER, DEFAULT_COMMENTS_SATS_FILTER, HOMEPAGE_POSTS_SATS_FILTER } from '@/lib/constants'
 import { resolveOpensearchModelId } from '../search/model-id'
 import removeMd from 'remove-markdown'
@@ -187,19 +188,6 @@ async function loadSatsFilters (me, userLoader) {
 // ---- Query-part builders ----
 // Each returns { filters: [...], queries: [...] } for spreading into
 // the filter and termQuery arrays.
-
-function nymClauses (nym) {
-  if (!nym) return { filters: [], queries: [] }
-  const name = nym.slice(1).toLowerCase()
-  if (!name) return { filters: [], queries: [] } // guard: bare "@" with no name
-  const pattern = `*${name}*`
-  // Strict author-only filter for @nym searches.
-  // case_insensitive: keyword field stores original case; queries are lowercased
-  return {
-    filters: [{ wildcard: { 'user.name': { value: pattern, case_insensitive: true } } }],
-    queries: []
-  }
-}
 
 function territoryClauses (territory) {
   if (!territory) return { filters: [], queries: [] }
