@@ -16,6 +16,21 @@ import { abbrNum } from '@/lib/format'
 import { useRouter } from 'next/router'
 import { timeUnitForRange } from '@/lib/time'
 import { payTypeShortName } from '@/lib/pay-in'
+import styles from './charts.module.css'
+
+const tooltipContentStyle = {
+  color: 'var(--bs-body-color)',
+  backgroundColor: 'var(--bs-body-bg)',
+  opacity: 1
+}
+
+function ChartFrame ({ children }) {
+  return (
+    <div className={styles.frame}>
+      {children}
+    </div>
+  )
+}
 
 const dateFormatter = (when, from, to) => {
   const unit = xAxisName(when, from, to)
@@ -92,27 +107,34 @@ export function WhenAreaChart ({ data }) {
   const to = router.query.to
 
   return (
-    <ResponsiveContainer width='100%' height={400} minWidth={300}>
-      <AreaChart
-        data={data}
-        margin={{
-          top: 5,
-          right: 5,
-          left: 0,
-          bottom: 0
-        }}
-      >
-        <XAxis
-          dataKey='time' tickFormatter={dateFormatter(when, from, to)} name={xAxisName(when, from, to)}
-          tick={{ fill: 'var(--theme-grey)' }}
-        />
-        <YAxis tickFormatter={abbrNum} tick={{ fill: 'var(--theme-grey)' }} />
-        <Tooltip labelFormatter={labelFormatter(when, from, to)} contentStyle={{ color: 'var(--bs-body-color)', backgroundColor: 'var(--bs-body-bg)', opacity: 1, zIndex: -1 }} />
-        <Legend />
-        {Object.keys(data[0]).filter(v => v !== 'time' && v !== '__typename').map((v, i) =>
-          <Area key={v} type='monotone' dataKey={v} name={v} stackId='1' stroke={getColor(i)} fill={getColor(i)} />)}
-      </AreaChart>
-    </ResponsiveContainer>
+    <ChartFrame>
+      <ResponsiveContainer width='100%' height={400} minWidth={300}>
+        <AreaChart
+          data={data}
+          margin={{
+            top: 5,
+            right: 5,
+            left: 0,
+            bottom: 0
+          }}
+        >
+          <XAxis
+            dataKey='time' tickFormatter={dateFormatter(when, from, to)} name={xAxisName(when, from, to)}
+            tick={{ fill: 'var(--theme-grey)' }}
+          />
+          <YAxis tickFormatter={abbrNum} tick={{ fill: 'var(--theme-grey)' }} />
+          <Tooltip
+            labelFormatter={labelFormatter(when, from, to)}
+            contentStyle={tooltipContentStyle}
+            wrapperStyle={{ zIndex: 2 }}
+            allowEscapeViewBox={{ x: true, y: true }}
+          />
+          <Legend />
+          {Object.keys(data[0]).filter(v => v !== 'time' && v !== '__typename').map((v, i) =>
+            <Area key={v} type='monotone' dataKey={v} name={v} stackId='1' stroke={getColor(i)} fill={getColor(i)} />)}
+        </AreaChart>
+      </ResponsiveContainer>
+    </ChartFrame>
   )
 }
 
@@ -129,27 +151,34 @@ export function WhenLineChart ({ data }) {
   const to = router.query.to
 
   return (
-    <ResponsiveContainer width='100%' height={400} minWidth={300}>
-      <LineChart
-        data={data}
-        margin={{
-          top: 5,
-          right: 5,
-          left: 0,
-          bottom: 0
-        }}
-      >
-        <XAxis
-          dataKey='time' tickFormatter={dateFormatter(when, from, to)} name={xAxisName(when, from, to)}
-          tick={{ fill: 'var(--theme-grey)' }}
-        />
-        <YAxis tickFormatter={abbrNum} tick={{ fill: 'var(--theme-grey)' }} />
-        <Tooltip labelFormatter={labelFormatter(when, from, to)} contentStyle={{ color: 'var(--bs-body-color)', backgroundColor: 'var(--bs-body-bg)' }} />
-        <Legend />
-        {Object.keys(data[0]).filter(v => v !== 'time' && v !== '__typename').map((v, i) =>
-          <Line key={v} type='monotone' dataKey={v} name={v} stroke={getColor(i)} fill={getColor(i)} />)}
-      </LineChart>
-    </ResponsiveContainer>
+    <ChartFrame>
+      <ResponsiveContainer width='100%' height={400} minWidth={300}>
+        <LineChart
+          data={data}
+          margin={{
+            top: 5,
+            right: 5,
+            left: 0,
+            bottom: 0
+          }}
+        >
+          <XAxis
+            dataKey='time' tickFormatter={dateFormatter(when, from, to)} name={xAxisName(when, from, to)}
+            tick={{ fill: 'var(--theme-grey)' }}
+          />
+          <YAxis tickFormatter={abbrNum} tick={{ fill: 'var(--theme-grey)' }} />
+          <Tooltip
+            labelFormatter={labelFormatter(when, from, to)}
+            contentStyle={tooltipContentStyle}
+            wrapperStyle={{ zIndex: 2 }}
+            allowEscapeViewBox={{ x: true, y: true }}
+          />
+          <Legend />
+          {Object.keys(data[0]).filter(v => v !== 'time' && v !== '__typename').map((v, i) =>
+            <Line key={v} type='monotone' dataKey={v} name={v} stroke={getColor(i)} fill={getColor(i)} />)}
+        </LineChart>
+      </ResponsiveContainer>
+    </ChartFrame>
   )
 }
 
@@ -171,32 +200,39 @@ export function WhenComposedChart ({
   const to = router.query.to
 
   return (
-    <ResponsiveContainer width='100%' height={400} minWidth={300}>
-      <ComposedChart
-        data={data}
-        margin={{
-          top: 5,
-          right: 5,
-          left: 0,
-          bottom: 0
-        }}
-      >
-        <XAxis
-          dataKey='time' tickFormatter={dateFormatter(when, from, to)} name={xAxisName(when, from, to)}
-          tick={{ fill: 'var(--theme-grey)' }}
-        />
-        <YAxis yAxisId='left' orientation='left' allowDecimals={false} stroke='var(--theme-grey)' tickFormatter={abbrNum} tick={{ fill: 'var(--theme-grey)' }} />
-        <YAxis yAxisId='right' orientation='right' allowDecimals={false} stroke='var(--theme-grey)' tickFormatter={abbrNum} tick={{ fill: 'var(--theme-grey)' }} />
-        <Tooltip labelFormatter={labelFormatter(when, from, to)} contentStyle={{ color: 'var(--bs-body-color)', backgroundColor: 'var(--bs-body-bg)' }} />
-        <Legend />
-        {barNames?.map((v, i) =>
-          <Bar yAxisId={barAxis} key={v} stackId={barStackId} type='monotone' dataKey={v} name={v} stroke={getColor(i)} fill={getColor(i)} />)}
-        {areaNames?.map((v, i) =>
-          <Area yAxisId={areaAxis} key={v} type='monotone' dataKey={v} name={v} stackId='1' stroke={getColor(barNames.length + i)} fill={getColor(barNames.length + i)} />)}
-        {lineNames?.map((v, i) =>
-          <Line yAxisId={lineAxis} key={v} type='monotone' dataKey={v} name={v} stackId='1' stroke={getColor(barNames.length + areaNames.length + i)} />)}
-      </ComposedChart>
-    </ResponsiveContainer>
+    <ChartFrame>
+      <ResponsiveContainer width='100%' height={400} minWidth={300}>
+        <ComposedChart
+          data={data}
+          margin={{
+            top: 5,
+            right: 5,
+            left: 0,
+            bottom: 0
+          }}
+        >
+          <XAxis
+            dataKey='time' tickFormatter={dateFormatter(when, from, to)} name={xAxisName(when, from, to)}
+            tick={{ fill: 'var(--theme-grey)' }}
+          />
+          <YAxis yAxisId='left' orientation='left' allowDecimals={false} stroke='var(--theme-grey)' tickFormatter={abbrNum} tick={{ fill: 'var(--theme-grey)' }} />
+          <YAxis yAxisId='right' orientation='right' allowDecimals={false} stroke='var(--theme-grey)' tickFormatter={abbrNum} tick={{ fill: 'var(--theme-grey)' }} />
+          <Tooltip
+            labelFormatter={labelFormatter(when, from, to)}
+            contentStyle={tooltipContentStyle}
+            wrapperStyle={{ zIndex: 2 }}
+            allowEscapeViewBox={{ x: true, y: true }}
+          />
+          <Legend />
+          {barNames?.map((v, i) =>
+            <Bar yAxisId={barAxis} key={v} stackId={barStackId} type='monotone' dataKey={v} name={v} stroke={getColor(i)} fill={getColor(i)} />)}
+          {areaNames?.map((v, i) =>
+            <Area yAxisId={areaAxis} key={v} type='monotone' dataKey={v} name={v} stackId='1' stroke={getColor(barNames.length + i)} fill={getColor(barNames.length + i)} />)}
+          {lineNames?.map((v, i) =>
+            <Line yAxisId={lineAxis} key={v} type='monotone' dataKey={v} name={v} stackId='1' stroke={getColor(barNames.length + areaNames.length + i)} />)}
+        </ComposedChart>
+      </ResponsiveContainer>
+    </ChartFrame>
   )
 }
 

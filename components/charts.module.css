@@ -1,0 +1,11 @@
+/* Later charts in the analytics grid paint over earlier tooltips.
+   Raise the hovered chart so Recharts' absolutely positioned tooltip wins. */
+.frame {
+  position: relative;
+  z-index: 0;
+}
+
+.frame:hover,
+.frame:focus-within {
+  z-index: 2;
+}
