@@ -1,8 +1,8 @@
 import { decodeCursor, LIMIT, nextCursorEncoded } from '@/lib/cursor'
 import { whenToFrom } from '@/lib/time'
 import { getItem, itemQueryWithMeta, SELECT } from './item'
-import { parse } from 'tldts'
 import { searchSchema, validateSchema } from '@/lib/validate'
+import { urlQueries } from '@/lib/search-url'
 import { DEFAULT_POSTS_SATS_FILTER, DEFAULT_COMMENTS_SATS_FILTER, HOMEPAGE_POSTS_SATS_FILTER } from '@/lib/constants'
 import { resolveOpensearchModelId } from '../search/model-id'
 import removeMd from 'remove-markdown'
@@ -238,21 +238,6 @@ function quoteClauses (quotes) {
     })
   }
   return { filters, queries }
-}
-
-// Returns an array of term queries for url matching (no filter needed).
-function urlQueries (url) {
-  if (!url) return []
-  let uri = url.slice(4)
-  const queries = [
-    { match_bool_prefix: { url: { query: uri, operator: 'and', boost: 1000 } } }
-  ]
-  const parsed = parse(uri)
-  if (parsed?.subdomain?.length > 0) {
-    uri = uri.replace(`${parsed.subdomain}.`, '')
-  }
-  queries.push({ wildcard: { url: { value: `*${uri}*` } } })
-  return queries
 }
 
 // ---- Scoring & text match ----
